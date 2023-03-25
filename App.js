@@ -1,20 +1,53 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native'
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import Ionicons from 'react-native-vector-icons/Ionicons'
+import Add from './src/screens/Add'
+import Analysis from './src/screens/Analysis'
+import Statistics from './src/screens/Statistics'
+import Settings from './src/screens/Settings'
+
+const Tab = createBottomTabNavigator()
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+    <NavigationContainer>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+            if (route.name === 'Add') {
+              iconName = 'add-circle'
+            } else if (route.name === 'Statistics') {
+              iconName = 'analytics'
+            } else if (route.name === 'Analysis') {
+              iconName = 'cellular'
+            } else if (route.name === 'Settings') {
+              iconName = 'settings'
+            }
+            return <Ionicons name={iconName} size={size} color={color} />
+          },
+          tabBarActiveTintColor: '#ec9706',
+          tabBarInactiveTintColor: 'gray',
+        })}
+      >
+        <Tab.Screen options={{ headerShown: false }} name="Add" children={() => <Add />} />
+        <Tab.Screen
+          options={{ headerShown: false }}
+          name="Statistics"
+          children={() => <Statistics />}
+        />
+        <Tab.Screen
+          options={{ headerShown: false }}
+          name="Analysis"
+          children={() => <Analysis />}
+        />
+        <Tab.Screen
+          options={{ headerShown: false }}
+          name="Settings"
+          children={() => <Settings />}
+        />
+      </Tab.Navigator>
+    </NavigationContainer>
+  )
+}
