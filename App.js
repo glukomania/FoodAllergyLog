@@ -30,41 +30,45 @@ export default function App() {
 
   db.transaction((tx) => {
     tx.executeSql(
-      'CREATE TABLE IF NOT EXISTS reaction (id INTEGER PRIMARY KEY AUTOINCREMENT, value TEXT, timestamp TEXT, notes TEXT)',
+      'CREATE TABLE IF NOT EXISTS reaction (id INTEGER PRIMARY KEY AUTOINCREMENT, value TEXT, timestamp TEXT, reactionType TEXT, isNew BOOL)',
     )
   })
 
   // event handler for new item creation
-  const newFoodRecord = (name, timestamp) => {
+  const newFoodRecord = (value, timestamp) => {
     db.transaction((tx) => {
       tx.executeSql(
         'INSERT INTO foodlist (value, timestamp) values (?, ?)',
-        [name, timestamp],
-        (txObj, resultSet) =>
-          setData(
-            data.concat({
+        [value, timestamp],
+        (txObj, resultSet) => {
+          setFoodData(
+            foodData.concat({
               id: resultSet.insertId,
-              value: name,
+              value: value,
               timestamp: timestamp,
             }),
-          ),
+          )
+        },
+
         (txObj, error) => console.log('Error', error),
       )
     })
   }
 
   // event handler for new item creation
-  const newReactionRecord = (value, timestamp) => {
+  const newReactionRecord = (value, timestamp, reactionType, isNew) => {
     db.transaction((tx) => {
       tx.executeSql(
-        'INSERT INTO reaction (value, timestamp) values (?, ?)',
-        [value, timestamp],
+        'INSERT INTO reaction (value, timestamp, reactionType, isNew) values (?, ?, ?, ?)',
+        [value, timestamp, reactionType, isNew],
         (txObj, resultSet) =>
-          setData(
-            data.concat({
+          setReactionData(
+            reactionData.concat({
               id: resultSet.insertId,
               value: value,
               timestamp: timestamp,
+              reactionType: reactionType,
+              isNew: isNew,
             }),
           ),
         (txObj, error) => console.log('Error', error),
@@ -79,7 +83,9 @@ export default function App() {
         'SELECT * FROM foodlist',
         null, // passing sql query and parameters:null
         // success callback which sends two things Transaction object and ResultSet Object
-        (txObj, { rows: { _array } }) => setFoodData(_array),
+        (txObj, { rows: { _array } }) => {
+          setFoodData(_array)
+        },
         // failure callback which sends two things Transaction object and Error
         (txObj, error) => console.log('Error ', error),
       )
@@ -97,6 +103,16 @@ export default function App() {
       )
     })
   }
+
+  useEffect(() => {
+    console.log('--- App is started ---')
+    fetchData()
+  }, [])
+
+  // useEffect(() => {
+  //   console.log('App UE food', foodData)
+  //   console.log('App UE reactionData', reactionData)
+  // }, [foodData, reactionData])
 
   return (
     <NavigationContainer>
@@ -140,7 +156,7 @@ export default function App() {
         <Tab.Screen
           options={{ headerShown: false }}
           name="Settings"
-          children={() => <Settings fetchData={fetchData} />}
+          children={() => <Settings fetchData={fetchData} reactionData={reactionData} />}
         />
       </Tab.Navigator>
     </NavigationContainer>
