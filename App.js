@@ -17,34 +17,35 @@ export default function App() {
   const [reactionData, setReactionData] = useState(null)
   const [foodData, setFoodData] = useState(null)
 
-  // db.transaction((tx) => {
-  //   tx.executeSql('DROP TABLE recordlist')
-  // })
+  db.transaction((tx) => {
+    tx.executeSql('DROP TABLE reaction')
+    tx.executeSql('DROP TABLE foodlist')
+  })
 
   // Check if the items table exists if not create it
   db.transaction((tx) => {
     tx.executeSql(
-      'CREATE TABLE IF NOT EXISTS foodlist (id INTEGER PRIMARY KEY AUTOINCREMENT, value TEXT, timestamp TEXT)',
+      'CREATE TABLE IF NOT EXISTS foodlist (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, timestamp TEXT)',
     )
   })
 
   db.transaction((tx) => {
     tx.executeSql(
-      'CREATE TABLE IF NOT EXISTS reaction (id INTEGER PRIMARY KEY AUTOINCREMENT, value TEXT, timestamp TEXT, reactionType TEXT, isNew BOOL)',
+      'CREATE TABLE IF NOT EXISTS reaction (id INTEGER PRIMARY KEY AUTOINCREMENT, severity TEXT, timestamp TEXT, reactionType TEXT, isNew BOOL)',
     )
   })
 
   // event handler for new item creation
-  const newFoodRecord = (value, timestamp) => {
+  const newFoodRecord = (name, timestamp) => {
     db.transaction((tx) => {
       tx.executeSql(
-        'INSERT INTO foodlist (value, timestamp) values (?, ?)',
-        [value, timestamp],
+        'INSERT INTO foodlist (name, timestamp) values (?, ?)',
+        [name, timestamp],
         (txObj, resultSet) => {
           setFoodData(
             foodData.concat({
               id: resultSet.insertId,
-              value: value,
+              name: name,
               timestamp: timestamp,
             }),
           )
@@ -56,16 +57,16 @@ export default function App() {
   }
 
   // event handler for new item creation
-  const newReactionRecord = (value, timestamp, reactionType, isNew) => {
+  const newReactionRecord = (severity, timestamp, reactionType, isNew) => {
     db.transaction((tx) => {
       tx.executeSql(
-        'INSERT INTO reaction (value, timestamp, reactionType, isNew) values (?, ?, ?, ?)',
-        [value, timestamp, reactionType, isNew],
+        'INSERT INTO reaction (severity, timestamp, reactionType, isNew) values (?, ?, ?, ?)',
+        [severity, timestamp, reactionType, isNew],
         (txObj, resultSet) =>
           setReactionData(
             reactionData.concat({
               id: resultSet.insertId,
-              value: value,
+              severity: severity,
               timestamp: timestamp,
               reactionType: reactionType,
               isNew: isNew,
@@ -156,7 +157,7 @@ export default function App() {
         <Tab.Screen
           options={{ headerShown: false }}
           name="Settings"
-          children={() => <Settings fetchData={fetchData} reactionData={reactionData} />}
+          children={() => <Settings reactionData={reactionData} foodData={foodData} />}
         />
       </Tab.Navigator>
     </NavigationContainer>
