@@ -1,26 +1,35 @@
 import React, { useEffect, useState } from 'react'
-import { NavigationContainer } from '@react-navigation/native'
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import Ionicons from 'react-native-vector-icons/Ionicons'
+// import React, { useEffect, useState } from 'react'
+// import { Text, View } from 'react-native'
 import Add from './src/screens/Add'
 import Analysis from './src/screens/Analysis'
 import Statistics from './src/screens/Statistics'
 import Settings from './src/screens/Settings'
+import Ionicons from 'react-native-vector-icons/Ionicons'
+
+import { View, useWindowDimensions } from 'react-native'
+import { TabView, SceneMap, TabBar } from 'react-native-tab-view'
 
 import * as SQLite from 'expo-sqlite'
 
 const db = SQLite.openDatabase('db.foodDb') // returns Database object
 
-const Tab = createBottomTabNavigator()
-
 export default function App() {
   const [reactionData, setReactionData] = useState(null)
   const [foodData, setFoodData] = useState(null)
+  const layout = useWindowDimensions()
+  const [index, setIndex] = useState(0)
+  const [routes] = useState([
+    { key: 'Add', title: 'Add' },
+    { key: 'Statistics', title: 'Statistics' },
+    { key: 'Analysis', title: 'Analysis' },
+    { key: 'Settings', title: 'Settings' },
+  ])
 
-  db.transaction((tx) => {
-    tx.executeSql('DROP TABLE reaction')
-    tx.executeSql('DROP TABLE foodlist')
-  })
+  // db.transaction((tx) => {
+  //   tx.executeSql('DROP TABLE reaction')
+  //   tx.executeSql('DROP TABLE foodlist')
+  // })
 
   // Check if the items table exists if not create it
   db.transaction((tx) => {
@@ -105,61 +114,62 @@ export default function App() {
     })
   }
 
+  const AddScreen = () => (
+    <Add newReactionRecord={newReactionRecord} newFoodRecord={newFoodRecord} />
+  )
+  const StatisticsScreen = () => <Statistics reactionData={reactionData} foodData={foodData} />
+  const AnalysisScreen = () => <Analysis />
+  const SettingsScreen = () => <Settings reactionData={reactionData} foodData={foodData} />
+
+  const renderScene = SceneMap({
+    Add: AddScreen,
+    Statistics: StatisticsScreen,
+    Analysis: AnalysisScreen,
+    Settings: SettingsScreen,
+  })
   useEffect(() => {
     console.log('--- App is started ---')
     fetchData()
   }, [])
 
-  // useEffect(() => {
-  //   console.log('App UE food', foodData)
-  //   console.log('App UE reactionData', reactionData)
-  // }, [foodData, reactionData])
+  const renderTabBar = (props) => {
+    console.log('props', props)
+    return (
+      <TabBar
+        {...props}
+        indicatorStyle={{ backgroundColor: 'grey' }}
+        style={{ backgroundColor: 'white', color: 'grey' }}
+        renderIcon={({ route, focused, color }) => {
+          let icon = ''
+          switch (route.key) {
+            case 'Add':
+              icon = 'add-circle'
+              break
+            case 'Statistics':
+              icon = 'analytics'
+              break
+            case 'Analysis':
+              icon = 'cellular'
+              break
+            case 'Settings':
+              icon = 'settings'
+              break
+          }
+          return <Ionicons name={icon} size={25} color={focused ? '#808000' : 'black'} />
+        }}
+      />
+    )
+  }
 
   return (
-    <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          tabBarIcon: ({ focused, color, size }) => {
-            let iconName
-
-            if (route.name === 'Add') {
-              iconName = 'add-circle'
-            } else if (route.name === 'Statistics') {
-              iconName = 'analytics'
-            } else if (route.name === 'Analysis') {
-              iconName = 'cellular'
-            } else if (route.name === 'Settings') {
-              iconName = 'settings'
-            }
-            return <Ionicons name={iconName} size={size} color={color} />
-          },
-          tabBarActiveTintColor: '#808000',
-          tabBarInactiveTintColor: '#cccc99',
-        })}
-      >
-        <Tab.Screen
-          options={{ headerShown: false }}
-          name="Add"
-          children={() => (
-            <Add newReactionRecord={newReactionRecord} newFoodRecord={newFoodRecord} />
-          )}
-        />
-        <Tab.Screen
-          options={{ headerShown: false }}
-          name="Statistics"
-          children={() => <Statistics reactionData={reactionData} foodData={foodData} />}
-        />
-        <Tab.Screen
-          options={{ headerShown: false }}
-          name="Analysis"
-          children={() => <Analysis />}
-        />
-        <Tab.Screen
-          options={{ headerShown: false }}
-          name="Settings"
-          children={() => <Settings reactionData={reactionData} foodData={foodData} />}
-        />
-      </Tab.Navigator>
-    </NavigationContainer>
+    <TabView
+      renderTabBar={renderTabBar}
+      navigationState={{ index, routes }}
+      renderScene={renderScene}
+      onIndexChange={setIndex}
+      initialLayout={{ width: layout.width }}
+      tabBarPosition={'bottom'}
+      indicatorStyle={{ backgroundColor: 'black' }}
+    />
   )
 }

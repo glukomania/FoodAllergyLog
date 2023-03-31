@@ -46,7 +46,7 @@ export const Settings = (props) => {
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Send json by email</Text>
 
-      <SafeAreaView style={{ width: '50%' }}>
+      <SafeAreaView style={{ width: '70%' }}>
         <TextInput
           placeholder={'email'}
           style={styles.input}

@@ -2,7 +2,7 @@
   "expo": {
     "name": "FoodAllergyLog",
     "slug": "FoodAllergyLog",
-    "version": "1.0.0",
+    "version": "1.0.14",
     "platforms": [
       "ios",
       "android",
@@ -22,7 +22,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.feelstudio.foodallergylog",
-      "buildNumber": "1.0.0"
+      "buildNumber": "1.0.14"
     },
     "android": {
       "package": "com.feelstudio.foodallergylog",

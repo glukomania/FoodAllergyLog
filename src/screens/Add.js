@@ -1,13 +1,14 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
 import { View, Text, ScrollView, Pressable } from 'react-native'
 import RNPickerSelect from 'react-native-picker-select'
 import moment from 'moment'
-import Ionicons from 'react-native-vector-icons/Ionicons'
 import MultiSlider from '@ptomasroos/react-native-multi-slider'
 import Autocomplete from 'react-native-autocomplete-input'
 import ToggleSwitch from 'toggle-switch-react-native'
 import DateTimePicker from '@react-native-community/datetimepicker'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import foodList from '../../data.js'
+import { reactionTypes } from '../../data.js'
 
 export const Add = (props) => {
   const [date, setDate] = useState(moment().toISOString())
@@ -16,282 +17,23 @@ export const Add = (props) => {
   const [isNew, setIsNew] = useState(false)
   const [text, setText] = useState('')
   const [foods, setFoods] = useState([])
-
-  const reactionTypes = [
-    {
-      value: 'Oral',
-      label: 'Oral',
-    },
-    {
-      value: 'Dermatological',
-      label: 'Dermatological',
-    },
-    {
-      value: 'Respiratory',
-      label: 'Respiratory',
-    },
-    {
-      value: 'Gastrological',
-      label: 'Gastrological',
-    },
-    {
-      value: 'Neurological',
-      label: 'Neurological',
-    },
-  ]
+  const [selectedDate, setSelectedDate] = useState()
+  const [selectedTime, setSelectedTime] = useState()
 
   const handleSaving = useCallback(() => {
-    const res = {
-      date,
-    }
+    // saving
     props.newReactionRecord(reaction, date, reactionType, isNew)
-    foods.map((item) => props.newFoodRecord(item, date))
+    foods.forEach((item) => props.newFoodRecord(item, date))
 
-    // sending
     setFoods([])
     setText('')
   }, [date, reaction, foods, props.newFoodRecord, props.newReactionRecord])
-
-  const renderDayPicker = () => {
-    const onChange = (event, selectedDate) => {
-      const currentDate = selectedDate
-      setDate(currentDate)
-    }
-
-    return (
-      <View
-        style={{
-          paddingTop: '7%',
-          paddingBottom: '7%',
-          flexDirection: 'row',
-          width: '100%',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        {
-          <DateTimePicker
-            testID="dateTimePicker"
-            value={new Date(date)}
-            mode={'time'}
-            is24Hour={true}
-            onChange={(val) => {
-              setDate(moment(val).toISOString())
-            }}
-          />
-        }
-      </View>
-    )
-  }
 
   const filterData = useCallback(
     (text) => {
       let data = []
 
-      let food = [
-        'Almond',
-        'Apple',
-        'Apricot',
-        'Artichoke',
-        'Asparagus',
-        'Avocado',
-        'Bamboo shoot',
-        'Banana',
-        'Barley',
-        'Bean',
-        'Blackberry',
-        'Black-eyed bean',
-        'Blueberry',
-        'Bonito',
-        'Broad bean',
-        'Broccoli',
-        'Brussels sprouts',
-        'Buckwheat',
-        'Burdock',
-        'Butter',
-        'Butter bean',
-        'Buttermilk',
-        'Button mushroom',
-        'Cabbage',
-        'Cacao bean',
-        'Canola oil',
-        'Carrot',
-        'Casein',
-        'Cauliflower',
-        'Celery',
-        'Cheese',
-        'Cherry',
-        'Chestnut',
-        'Chicken',
-        'Chicory',
-        'Chinese cabbage',
-        'Coconut oil',
-        'Coffee bean',
-        'Corn',
-        'Corn oil',
-        'Cotton seed',
-        'Cranberry',
-        'Cream',
-        'Crustaceans',
-        'Cucumber',
-        'Custard',
-        'Date',
-        'Deer',
-        'Duck',
-        'Eel',
-        'Egg plant',
-        'Endive',
-        'Fructose',
-        'Garlic',
-        'Ghrkin',
-        'Ginger',
-        'Ginkgo nut',
-        'Globfish',
-        'Glucose',
-        'Goat',
-        'Grape',
-        'Grapefruit',
-        'Grapeseed oil',
-        'Green soybean',
-        'Groundnut oil',
-        'Guava',
-        'Honey',
-        'Hop',
-        'Horse',
-        'Horse Mackerel',
-        'Horseradish',
-        'Huckleberry',
-        'Ice cream',
-        'Japanese pear',
-        'Japanese persimmon',
-        'Japanese plum',
-        'Kale',
-        'Kidney bean',
-        'Kiwi',
-        'Konjac',
-        'Kyona',
-        'Lactose',
-        'Leek',
-        'Lemon',
-        'Lentil',
-        'Lettuce',
-        'Lima bean',
-        'Lime',
-        'Loquat',
-        'Mackerel',
-        'Makuwauri  melon',
-        'Mango',
-        'Melon',
-        'Mineral water',
-        'Mitsuba',
-        'Mume plum',
-        'Mustard oil',
-        'Mustard Spinach',
-        'Nectarine',
-        'Nira',
-        'Okra',
-        'Olive oil',
-        'Onion',
-        'Orange',
-        'Orange pulp',
-        'Papaya',
-        'Parsley',
-        'Parsnip',
-        'Passion fruit',
-        'Peach',
-        'Peanut',
-        'Pear',
-        'Peas',
-        'Pecan',
-        'Pegia',
-        'Peppermint',
-        'Percifomes',
-        'Pineapple',
-        'Popcorn',
-        'Potato',
-        'Prune',
-        'Pumpkin',
-        'Qing-geng-cai',
-        'Quince',
-        'Radish leaf',
-        'Radish root',
-        'Rapeseed',
-        'Raspberry',
-        'Rice',
-        'Ricebran oil',
-        'Royal Jelly',
-        'Rye',
-        'Safflower seed',
-        'Salmon',
-        'Salsify',
-        'Sansho',
-        'Sea Bass',
-        'Sea Bream',
-        'Sesame seed',
-        'Shallot',
-        'Sheep',
-        'Shelled mollusc',
-        'Shiitake  mushroom',
-        'Shungiku',
-        'Sour cream',
-        'Soybean',
-        'Spearmint',
-        'Spinach',
-        'Squash',
-        'Strawberry',
-        'Sugar',
-        'Sugar beet',
-        'Sugarcane',
-        'Sultani',
-        'Sultapya',
-        'Sunflower oil',
-        'Sunflower seed',
-        'Sweet corn',
-        'Sweet Pepper',
-        'Sweet potato',
-        'Taro',
-        'Tea',
-        'Tetraodontiformes',
-        'Tomato',
-        'Trout',
-        'Tuna',
-        'Turkey',
-        'Turnip leaf',
-        'Turnip root',
-        'Vegetable oil',
-        'Walnut',
-        'Water melon',
-        'Watercress',
-        'Welsh',
-        'Wheat',
-        'Whey',
-        'White bean',
-        'Yam',
-        'Yogurt',
-        'Tangerine',
-        'Zucchini',
-        'Hen eggs',
-        'Quail eggs',
-        'Poppy seed',
-        'Hazelnut',
-        'Non-gluten flour',
-        'Mustard',
-        'Herb',
-        'Beef',
-        'Pork',
-        'Rabbit',
-        'Cashew',
-        'Gluten flour',
-        'Pistachios',
-        'Brazilian nut',
-        'Sea fish',
-        'Cow milk',
-        'Freshwater fish',
-        'Goat milk',
-        'Sheep milk',
-        'Chickpeas',
-      ]
-      food.forEach((item, index) => {
+      foodList.forEach((item, index) => {
         if (text.length > 0 && item.toLowerCase().includes(text.toLowerCase())) {
           data.push(item)
         }
@@ -301,8 +43,37 @@ export const Add = (props) => {
     [props.colors],
   )
 
+  const renderTimePicker = useCallback(() => {
+    return (
+      <DateTimePicker
+        testID="dateTimePicker"
+        value={new Date(date)}
+        mode={'time'}
+        key="time"
+        is24Hour={true}
+        onChange={(e, val) => {
+          setSelectedTime(val)
+        }}
+      />
+    )
+  }, [date])
+
+  const renderDayPicker = useCallback(() => {
+    return (
+      <DateTimePicker
+        testID="dateTimePicker"
+        key="date"
+        value={new Date(date)}
+        mode={'date'}
+        onChange={(e, val) => {
+          setSelectedDate(val)
+        }}
+      />
+    )
+  }, [date])
+
   const renderFoodList = (item) => {
-    return <Text key={'item'}>{item}</Text>
+    return <Text key={item}>{item}</Text>
   }
 
   const Separator = (text) => (
@@ -376,9 +147,55 @@ export const Add = (props) => {
     )
   }
 
+  const renderInput = () => {
+    return (
+      <View
+        style={{
+          width: '80%',
+        }}
+      >
+        <Autocomplete
+          value={text}
+          placeholder={'Food name'}
+          data={filterData(text)}
+          onChangeText={(query) => setText(query)}
+          autoCorrect={true}
+          flatListProps={{
+            keyExtractor: (_, idx) => idx,
+            renderItem: ({ item }) => {
+              return (
+                <Pressable
+                  onPress={() => handleItemPress(item)}
+                  style={{ zIndex: 1, paddingBottom: '1%', paddingTop: '1%', elevation: 5 }}
+                >
+                  <Text key={item}>{item}</Text>
+                </Pressable>
+              )
+            },
+          }}
+        />
+      </View>
+    )
+  }
+
   const handleItemPress = (item) => {
     setText(item)
   }
+
+  const handleAdd = () => {
+    if (foodList.indexOf(text) > -1) {
+      setFoods([...foods, text])
+      setText('')
+    }
+  }
+
+  useEffect(() => {
+    setDate(moment(selectedDate).toISOString())
+  }, [selectedDate])
+
+  useEffect(() => {
+    setDate(moment(selectedTime).toISOString())
+  }, [selectedTime])
 
   return (
     <View
@@ -388,13 +205,10 @@ export const Add = (props) => {
         width: '100%',
       }}
     >
-      <KeyboardAwareScrollView
-        innerRef={(ref) => (this.scrollView = ref)} //... Access the ref for any other functions here
-        contentContainerStyle={{ flex: 1 }}
-      >
+      <KeyboardAwareScrollView contentContainerStyle={{ flex: 1 }}>
         <View
           style={{
-            height: '5%',
+            height: '6%',
             flexDirection: 'row',
             width: '100%',
             alignItems: 'center',
@@ -411,41 +225,25 @@ export const Add = (props) => {
             paddingRight: '10%',
           }}
         >
-          {renderDayPicker()}
+          <View
+            style={{
+              paddingTop: '10%',
+              flexDirection: 'row',
+              width: '100%',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {renderDayPicker()}
+
+            {renderTimePicker()}
+          </View>
 
           {Separator('Reaction')}
-
           {renderReaction()}
-
           {Separator('Food log')}
-
           <View style={{ flexDirection: 'row', marginTop: '10%', elevation: 5, zIndex: 10 }}>
-            <View
-              style={{
-                width: '80%',
-              }}
-            >
-              <Autocomplete
-                value={text}
-                placeholder={'Food name'}
-                data={filterData(text)}
-                onChangeText={(query) => setText(query)}
-                autoCorrect={true}
-                flatListProps={{
-                  keyExtractor: (_, idx) => idx,
-                  renderItem: ({ item }) => {
-                    return (
-                      <Pressable
-                        onPress={() => handleItemPress(item)}
-                        style={{ zIndex: 1, backgroundColor: 'red', elevation: 5 }}
-                      >
-                        <Text key={item}>{item}</Text>
-                      </Pressable>
-                    )
-                  },
-                }}
-              />
-            </View>
+            {renderInput()}
             <Pressable
               style={{
                 marginLeft: '5%',
@@ -453,15 +251,11 @@ export const Add = (props) => {
                 borderRadius: '5',
                 padding: '4%',
               }}
-              onPress={() => {
-                setFoods([...foods, text])
-                setText('')
-              }}
+              onPress={handleAdd}
             >
               <Text style={{ color: 'white' }}>Add</Text>
             </Pressable>
           </View>
-
           <ScrollView behavior="padding" style={{ width: '100%' }}>
             <View
               style={{
@@ -473,7 +267,6 @@ export const Add = (props) => {
               {foods.map(renderFoodList)}
             </View>
           </ScrollView>
-
           <Pressable onPress={handleSaving}>
             <Text
               style={{
